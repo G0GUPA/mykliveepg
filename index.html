@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bathroom Kiosk</title>
+    <style>
+        /* 배경 및 기본 스타일 */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black; /* 배터리 절약 및 번인 방지 */
+            color: white;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 날짜 스타일 */
+        #date {
+            font-size: 1.5rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        /* 시계 스타일 */
+        #clock {
+            font-size: 5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* 날씨 스타일 */
+        #weather {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .temp { font-weight: bold; color: #ffeb3b; }
+        .desc { color: #81d4fa; }
+
+        /* 화면 보호를 위한 미세한 움직임 애니메이션 (선택사항) */
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+        .container { animation: float 10s infinite ease-in-out; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="date">0000년 00월 00일 요일</div>
+        <div id="clock">00:00:00</div>
+        <div id="weather">
+            <span class="temp">--°C</span>
+            <span class="desc">날씨 불러오는 중...</span>
+        </div>
+    </div>
+
+    <script>
+        // 1. 시계 및 날짜 업데이트 함수
+        function updateClock() {
+            const now = new Date();
+            
+            // 날짜 형식
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+            const day = dayNames[now.getDay()];
+            
+            document.getElementById('date').innerText = `${year}년 ${month}월 ${date}일 (${day})`;
+
+            // 시간 형식
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clock').innerText = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 2. 날씨 정보 가져오기 (OpenWeatherMap API 사용)
+        async function getWeather() {
+            const API_KEY = '8e4cc27695f9ae10ebc4cee6f68d8947'; // 여기에 본인의 API 키를 넣으세요
+            const CITY = 'incheon'; // 원하는 도시명 (영문)
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric&lang=kr`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const temp = Math.round(data.main.temp);
+                const desc = data.weather[0].description;
+                
+                document.querySelector('.temp').innerText = `${temp}°C`;
+                document.querySelector('.desc').innerText = desc;
+            } catch (error) {
+                console.error("날씨 정보 호출 실패", error);
+                document.querySelector('.desc').innerText = "날씨 정보 연결 불가";
+            }
+        }
+
+        // 실행
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 날씨는 30분마다 업데이트
+        getWeather();
+        setInterval(getWeather, 1800000); 
+    </script>
+</body>
+</html>
